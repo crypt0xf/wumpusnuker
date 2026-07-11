@@ -3,10 +3,6 @@
 TUI para apagar **suas próprias mensagens** de um canal, DM ou servidor inteiro do Discord.
 Sem dependências externas — só a biblioteca padrão do Python.
 
-```
-  ◈ wumpusnuker  ·  discord message wiper
-```
-
 ## ⚠ Aviso
 
 Automatizar uma conta de usuário com o token dela ("self-bot") **viola os Termos de
@@ -59,11 +55,3 @@ para `discord.com/api` → **Headers → `authorization`** → copie o valor exa
 - A API não faz bulk-delete de mensagens antigas (>14 dias) — é uma por uma, então
   servidor grande leva tempo.
 - Delay muito baixo gera mais 429. Padrão `0.8s` é seguro.
-
-## Licença
-
-MIT
-
----
-
-by crypt0xf
