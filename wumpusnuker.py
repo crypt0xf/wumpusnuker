@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-wumpusnuker — apaga suas mensagens de um canal ou servidor do Discord.
+wumpusnuker — deletes your messages from a Discord channel or server.
 
-AVISO: automatizar conta de usuário viola os Termos de Serviço do Discord
-e pode causar banimento. Use por sua conta e risco.
+WARNING: automating a user account violates Discord's Terms of Service
+and can result in a ban. Use at your own risk.
 
 x crypt0xf
 """
@@ -25,7 +25,7 @@ from urllib.error import HTTPError, URLError
 API = "https://discord.com/api/v10"
 _SIG = "".join(chr(c) for c in (99, 114, 121, 112, 116, 48, 120, 102))
 
-# terminal UTF-8 + ANSI (Windows 10+)
+# Windows: enable UTF-8 + ANSI escape codes
 if os.name == "nt":
     os.system("")
     try:
@@ -65,7 +65,7 @@ def show_cursor():
     sys.stdout.write(C["show"]); sys.stdout.flush()
 
 
-# largura visível ignorando códigos ANSI (mantém caixas alinhadas)
+# visible width ignoring ANSI codes (keeps boxes aligned)
 def _vislen(s):
     return len(re.sub(r"\033\[[0-9;?]*[a-zA-Z]", "", s))
 
@@ -93,7 +93,7 @@ def box_line(w, content=""):
     return col(BOX["v"], "cyn") + " " + content + " " * (pad - 1) + col(BOX["v"], "cyn")
 
 
-# ---------- animações ----------
+# ---------- animations ----------
 class Spinner:
     FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 
@@ -172,12 +172,12 @@ class DiscordAPI:
                     raw = r.read()
                     return json.loads(raw) if raw else {}
             except HTTPError as e:
-                if e.code == 429:  # rate limit: respeita retry_after
+                if e.code == 429:
                     try:
                         wait = float(json.loads(e.read()).get("retry_after", 1)) + 0.3
                     except Exception:
                         wait = 2.0
-                    sys.stdout.write(col(f"\r  ⏳ rate limit, aguardando {wait:.1f}s   ", "yel"))
+                    sys.stdout.write(col(f"\r  ⏳ rate limited, waiting {wait:.1f}s   ", "yel"))
                     sys.stdout.flush()
                     time.sleep(wait)
                     continue
@@ -194,7 +194,7 @@ class DiscordAPI:
 
     def guild_channels(self, guild_id):
         chans = self._req("GET", f"/guilds/{guild_id}/channels")
-        return [x for x in chans if x.get("type") in (0, 5)]  # texto + anúncios
+        return [x for x in chans if x.get("type") in (0, 5)]  # text + announcements
 
     def get_messages(self, channel_id, before=None, limit=100):
         params = {"limit": limit}
@@ -206,7 +206,7 @@ class DiscordAPI:
         return self._req("DELETE", f"/channels/{channel_id}/messages/{message_id}")
 
 
-# ---------- telas ----------
+# ---------- screens ----------
 def banner():
     clear()
     hide_cursor()
@@ -215,10 +215,10 @@ def banner():
     print(col("  ◈ ", "mag") + col("wumpusnuker", "mag", "b") + col("  ·  discord message wiper", "dim"))
     print()
     print(box_top(w, "wumpusnuker"))
-    print(box_line(w, col("apaga suas mensagens de um canal ou servidor", "gry", "it")))
+    print(box_line(w, col("deletes your messages from a channel or server", "gry", "it")))
     print(box_sep(w))
-    print(box_line(w, col("⚠  ", "yel") + col("automatizar conta de usuário viola os ToS", "yel")))
-    print(box_line(w, col("   do Discord e pode causar ", "yel") + col("BANIMENTO", "red", "b") + col(".", "yel")))
+    print(box_line(w, col("⚠  ", "yel") + col("automating a user account violates Discord's ToS", "yel")))
+    print(box_line(w, col("   and can result in a ", "yel") + col("BAN", "red", "b") + col(".", "yel")))
     print(box_line(w, col(f"by {_SIG}", "dim")))
     print(box_bot(w))
     show_cursor()
@@ -233,31 +233,31 @@ def ask(prompt, default=None):
 
 def login():
     while True:
-        print(col("  Cole o token da conta ", "gry") + col("(input oculto)", "dim"))
-        print(col("  DevTools → Network → request p/ discord.com/api", "dim"))
+        print(col("  Paste the account token ", "gry") + col("(hidden input)", "dim"))
+        print(col("  DevTools → Network → request to discord.com/api", "dim"))
         print(col("  → Headers → authorization", "dim"))
         raw = getpass.getpass(col("  🔑 token: ", "cyn"))
         if not raw.strip():
-            flash("token vazio.", "red", 2)
+            flash("empty token.", "red", 2)
             continue
         api = DiscordAPI(raw)
         try:
-            with Spinner("validando token…"):
+            with Spinner("validating token…"):
                 u = api.me()
-            flash(f"✓ logado como {u['username']}", "grn", 2)
+            flash(f"✓ logged in as {u['username']}", "grn", 2)
             print(col(f"     id: {u['id']}\n", "dim"))
             return api, u["id"]
         except HTTPError as e:
             if e.code == 401:
-                flash("✗ [401] token inválido ou expirado", "red", 3)
-                print(col("     • trocar senha/relogar RESETA o token", "dim"))
-                print(col("     • copie o valor exato de 'authorization'", "dim"))
-                print(col("     • user token NÃO leva prefixo 'Bot '\n", "dim"))
+                flash("✗ [401] invalid or expired token", "red", 3)
+                print(col("     • changing password / re-login RESETS the token", "dim"))
+                print(col("     • copy the exact value of 'authorization'", "dim"))
+                print(col("     • a user token does NOT have a 'Bot ' prefix\n", "dim"))
             else:
-                flash(f"✗ [HTTP {e.code}] falha no login", "red", 3)
+                flash(f"✗ [HTTP {e.code}] login failed", "red", 3)
         except Exception as e:
-            print(col(f"\n  erro: {e}\n", "red"))
-        if ask("tentar de novo? (s/n)", "s").lower() != "s":
+            print(col(f"\n  error: {e}\n", "red"))
+        if ask("try again? (y/n)", "y").lower() != "y":
             show_cursor()
             sys.exit(0)
 
@@ -270,7 +270,7 @@ def clean_channel(api, my_id, channel_id, delay, name=""):
         try:
             batch = api.get_messages(channel_id, before=before, limit=100)
         except HTTPError as e:
-            print(col(f"\n    leitura falhou HTTP {e.code}", "red"))
+            print(col(f"\n    fetch failed HTTP {e.code}", "red"))
             break
         if not batch:
             break
@@ -286,11 +286,11 @@ def clean_channel(api, my_id, channel_id, delay, name=""):
                 if e.code == 403:
                     continue
                 print(col(f"\n    delete HTTP {e.code}", "red"))
-            progress_bar(i, n, label=f"{name} · {deleted} apagadas")
+            progress_bar(i, n, label=f"{name} · {deleted} deleted")
             time.sleep(delay)
         if len(batch) < 100:
             break
-    progress_bar(1, 1, label=f"{name} · {deleted} apagadas · concluído")
+    progress_bar(1, 1, label=f"{name} · {deleted} deleted · done")
     sys.stdout.write("\n")
     show_cursor()
     return deleted
@@ -298,26 +298,26 @@ def clean_channel(api, my_id, channel_id, delay, name=""):
 
 def do_run(api, my_id):
     w = term_w()
-    print(box_top(w, "Alvo"))
-    print(box_line(w, col("1", "cyn", "b") + col("  Canal / DM      ", "wht") + col("(Channel ID)", "dim")))
-    print(box_line(w, col("2", "cyn", "b") + col("  Servidor inteiro", "wht") + col("  (Guild ID)", "dim")))
+    print(box_top(w, "Target"))
+    print(box_line(w, col("1", "cyn", "b") + col("  Channel / DM    ", "wht") + col("(Channel ID)", "dim")))
+    print(box_line(w, col("2", "cyn", "b") + col("  Entire server   ", "wht") + col("(Guild ID)", "dim")))
     print(box_bot(w))
-    mode = ask("escolha (1/2)", "1")
+    mode = ask("choose (1/2)", "1")
 
-    target = ask("cole o ID do alvo")
+    target = ask("paste the target ID")
     if not target.isdigit():
-        flash("ID inválido (só números).", "red", 3)
+        flash("invalid ID (digits only).", "red", 3)
         return 0
 
     try:
-        delay = max(0.0, float(ask("delay entre deleções (s)", "0.8")))
+        delay = max(0.0, float(ask("delay between deletions (s)", "0.8")))
     except ValueError:
         delay = 0.8
 
     print()
-    flash("⚠  ISSO APAGA SUAS MENSAGENS DE FORMA IRREVERSÍVEL", "red", 3)
-    if ask("confirmar? (digite SIM)") != "SIM":
-        flash("cancelado.", "yel", 2)
+    flash("⚠  THIS PERMANENTLY DELETES YOUR MESSAGES", "red", 3)
+    if ask("confirm? (type YES)") != "YES":
+        flash("cancelled.", "yel", 2)
         return 0
 
     print()
@@ -325,31 +325,31 @@ def do_run(api, my_id):
     total = 0
     try:
         if mode == "2":
-            with Spinner("listando canais do servidor…"):
+            with Spinner("listing server channels…"):
                 chans = api.guild_channels(target)
-            print(col(f"  {len(chans)} canais de texto encontrados\n", "cyn"))
+            print(col(f"  {len(chans)} text channels found\n", "cyn"))
             for i, ch in enumerate(chans, 1):
                 nm = ch.get("name", "?")
                 print(col(f"  ┌ [{i}/{len(chans)}] #{nm}", "mag", "b"))
                 total += clean_channel(api, my_id, ch["id"], delay, name=f"#{nm}")
         else:
-            total += clean_channel(api, my_id, target, delay, name="canal")
+            total += clean_channel(api, my_id, target, delay, name="channel")
     except HTTPError as e:
         if e.code == 401:
-            flash("[401] token caiu no meio. relogar.", "red", 3)
+            flash("[401] token died mid-run. re-login.", "red", 3)
         elif e.code in (403, 404):
-            flash(f"[HTTP {e.code}] sem acesso ao alvo.", "red", 3)
+            flash(f"[HTTP {e.code}] no access to target.", "red", 3)
         else:
             flash(f"[HTTP {e.code}]", "red", 3)
     except KeyboardInterrupt:
         show_cursor()
-        print(col("\n  interrompido pelo usuário.", "yel"))
+        print(col("\n  interrupted by user.", "yel"))
 
     dt = time.time() - t0
     print()
-    print(box_top(w, "Concluído"))
-    print(box_line(w, col("✓ ", "grn") + col("total apagadas: ", "wht") + col(str(total), "grn", "b")))
-    print(box_line(w, col(f"tempo: {dt:.0f}s", "gry")))
+    print(box_top(w, "Done"))
+    print(box_line(w, col("✓ ", "grn") + col("total deleted: ", "wht") + col(str(total), "grn", "b")))
+    print(box_line(w, col(f"time: {dt:.0f}s", "gry")))
     print(box_bot(w))
     return total
 
@@ -362,11 +362,11 @@ def run():
     while True:
         grand_total += do_run(api, my_id)
         print()
-        if ask("continuar com outro alvo? (s/n)", "n").lower() != "s":
+        if ask("run another target? (y/n)", "n").lower() != "y":
             break
         print()
 
-    print(col(f"\n  sessão encerrada · {grand_total} mensagens apagadas no total", "grn"))
+    print(col(f"\n  session ended · {grand_total} messages deleted in total", "grn"))
     print(col(f"  by {_SIG}\n", "dim"))
 
 
@@ -374,6 +374,6 @@ if __name__ == "__main__":
     try:
         run()
     except KeyboardInterrupt:
-        print(col("\n  saindo.", "yel"))
+        print(col("\n  exiting.", "yel"))
     finally:
         show_cursor()

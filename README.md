@@ -1,57 +1,38 @@
 # wumpusnuker
 
-TUI para apagar **suas próprias mensagens** de um canal, DM ou servidor inteiro do Discord.
-Sem dependências externas — só a biblioteca padrão do Python.
+TUI to delete **your own messages** from a Discord channel, DM, or entire server.
+Pure Python, no dependencies.
 
-## ⚠ Aviso
+## ⚠ Warning
 
-Automatizar uma conta de usuário com o token dela ("self-bot") **viola os Termos de
-Serviço do Discord** e pode resultar em **banimento permanente**. Use por sua conta e
-risco, de preferência numa conta descartável. **Nunca compartilhe seu token** — ele dá
-acesso total à conta.
+Using a user token to automate an account ("self-bot") **violates Discord's ToS**
+and can get it **permanently banned**. Use a throwaway account. **Never share your
+token.**
 
-A API do Discord só permite apagar mensagens **suas**, salvo se o token tiver a permissão
-*Manage Messages* no canal.
+## Requirements
 
-## Requisitos
+Python 3.8+, a terminal with UTF-8/ANSI support (e.g. Windows Terminal).
 
-- Python 3.8+
-- Terminal com suporte a UTF-8 e ANSI (Windows Terminal, não o `cmd.exe` legado)
-
-## Uso
+## Usage
 
 ```bash
 python wumpusnuker.py
 ```
 
-Fluxo:
+1. Paste your token (hidden input).
+2. Pick a target: channel/DM or whole server (by ID).
+3. Set the delay between deletions.
+4. Confirm by typing `YES`.
 
-1. Cole o token da conta (input oculto).
-2. Escolha o alvo: **canal/DM** (Channel ID) ou **servidor inteiro** (Guild ID).
-3. Informe o ID e o delay entre deleções.
-4. Confirme digitando `SIM`.
-5. Ao terminar, escolha rodar em outro alvo ou sair.
+**Get an ID:** enable Developer Mode (Settings → Advanced), then right-click the
+channel/server → Copy ID.
 
-## Como pegar os IDs
+**Get your token:** in Discord web, F12 → Network → any request to
+`discord.com/api` → Headers → `authorization`.
 
-Discord → **Configurações → Avançado → Modo desenvolvedor** (ON).
-Clique direito no canal/servidor → **Copiar ID**.
+## Notes
 
-## Como pegar o token
-
-Discord no navegador → **F12 → aba Network** → filtre por `api` → abra qualquer request
-para `discord.com/api` → **Headers → `authorization`** → copie o valor exato.
-
-## Recursos
-
-- Apaga só suas mensagens (canal, DM ou servidor inteiro)
-- Trata rate limit (429) automático, respeitando `retry_after`
-- Delay ajustável entre deleções
-- Barra de progresso, spinner e feedback ao vivo
-- Loop para múltiplos alvos sem relogar
-
-## Notas
-
-- A API não faz bulk-delete de mensagens antigas (>14 dias) — é uma por uma, então
-  servidor grande leva tempo.
-- Delay muito baixo gera mais 429. Padrão `0.8s` é seguro.
+- Only deletes your own messages, unless the token has *Manage Messages*.
+- No bulk-delete for messages older than 14 days — goes one by one, so large
+  servers take time.
+- Default delay `0.8s` avoids rate limits (429).
